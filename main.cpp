@@ -269,7 +269,7 @@ int main(){
     std::vector<Image> images = readData("data/mnist_train.csv");
     std::vector<Image> testImages = readData("data/mnist_test.csv");
     
-    std::vector<int> architecture = {784, 40, 10};
+    std::vector<int> architecture = {784, 40, 10}; // 784 input neurons, 40 hiddenlayer neurons, 10 output neurons
     NeuralNetwork nn(architecture);
     nn.train(images, 20, 0.008, 32);
 

@@ -102,7 +102,7 @@ std::vector<std::vector<double>> outerProduct(const std::vector<double>& vec1, c
     return result;
 }
 
-// ChatGPT
+// ChatGPT for time reasons
 std::vector<double> subtractVectors(const std::vector<double>& a, const std::vector<double>& b) {
     if (a.size() != b.size()) {
         throw std::invalid_argument("Vektoren müssen die gleiche Länge haben.");
@@ -198,29 +198,3 @@ std::vector<std::vector<double>> matrixAddition(const std::vector<std::vector<do
     }
     return result;
 }
-
-
-
-
-
-
-// In math_operations.h (oder main.cpp, falls bevorzugt)
-/*
-void checkMatrixIntegrity(const std::vector<std::vector<double>>& matrix, const std::string& matrixName ) {
-    if (matrix.empty()) {
-        std::cerr << "WARNUNG: " << matrixName << " ist leer." << std::endl;
-        return;
-    }
-    size_t expected_cols = matrix[0].size();
-    for (size_t i = 0; i < matrix.size(); ++i) {
-        if (matrix[i].size() != expected_cols) {
-            std::cerr << "!!! FEHLER bei Matrix-Integrität (" << matrixName << "): Zeile " << i
-                      << " hat " << matrix[i].size() << " Spalten, erwartet " << expected_cols << std::endl;
-            // Wenn dieser Fehler auftritt, dann ist die Matrix schon hier kaputt!
-            // An dieser Stelle könntest du auch eine Exception werfen, aber ein cerr ist fürs Debugging besser.
-            // throw std::runtime_error("Ragged matrix detected: " + matrixName);
-        }
-    }
-    // std::cout << "DEBUG: Matrix " << matrixName << " ist rechteckig (" << matrix.size() << "x" << expected_cols << ")" << std::endl; // Optional: Ausgabe bei Erfolg
-}
-*/
