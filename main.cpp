@@ -246,7 +246,7 @@ std::vector<Image> readData(std::string path){
                 image.label = std::stoi(segment);
                 count += 1;
             } else {
-                image.pixels.push_back(std::stod(segment));
+               image.pixels.push_back(std::stod(segment) / 255.0);
             }
         }
         image.targetVector = createTargetVector(image.label);
@@ -264,7 +264,7 @@ int main(){
 
     std::vector<int> architecture = {784, 40, 10};
     NeuralNetwork nn(architecture);
-    nn.train(images, 2, 0.05, 32);
+    nn.train(images, 5, 0.001, 32);
 
 
 

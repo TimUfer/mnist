@@ -4,7 +4,7 @@
 std::vector<double> random_vector(int size){
     std::vector<double> vector(size);
     for(double &e : vector){
-        e = ((double)rand()) / RAND_MAX;
+        e = ((double)rand() / RAND_MAX * 0.2) - 0.1; 
     }
     return vector;
 }
