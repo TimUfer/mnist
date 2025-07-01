@@ -22,4 +22,8 @@ std::vector<std::vector<double>> matrixSubtraction(
     const std::vector<std::vector<double>>& a,
     const std::vector<std::vector<double>>& b
 );
+std::vector<std::vector<double>> matrixAddition(
+    const std::vector<std::vector<double>>& a,
+    const std::vector<std::vector<double>>& b
+);
 #endif 

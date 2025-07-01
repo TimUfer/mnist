@@ -16,6 +16,12 @@ struct Image {
     std::vector<double> targetVector;
 };
 
+struct oneExampleGradients {
+    std::vector<std::vector<std::vector<double>>> oneExampleNabla_w;
+    std::vector<std::vector<double>> oneExampleNabla_b;
+    double oneExampleCost;
+};
+
 double sigmoid(double x){
     return 1.0/(1.0 + std::exp(-x));
 }
@@ -58,8 +64,29 @@ struct NeuralNetwork {
     NeuralNetwork(std::vector<int> architecture){
         this->architecture = architecture;
         for(size_t l = 1; l < architecture.size(); ++l){ // l = Anzahl Layer 
+            // Biases und Weights mit random zahlen auffüllen
             biases.push_back(random_vector(architecture[l]));
             weights.push_back(random_matrix(architecture[l], architecture[l-1]));
+            // Gradienten Matrizen Grösse einstellen
+            nabla_w.push_back(std::vector<std::vector<double>>(architecture[l], std::vector<double>(architecture[l-1], 0.0)));
+            nabla_b.push_back(std::vector<double>(architecture[l], 0.0));
+        }
+    }
+
+    void resetNablaGradients() {
+        // Zurücksetzen von nabla_w
+        for (size_t l = 0; l < nabla_w.size(); ++l) {
+            for (size_t row = 0; row < nabla_w[l].size(); ++row) {
+                for (size_t col = 0; col < nabla_w[l][row].size(); ++col) {
+                    nabla_w[l][row][col] = 0.0;
+                }
+            }
+        }
+        // Zurücksetzen von nabla_b
+        for (size_t l = 0; l < nabla_b.size(); ++l) {
+            for (size_t i = 0; i < nabla_b[l].size(); ++i) {
+                nabla_b[l][i] = 0.0;
+            }
         }
     }
 
@@ -99,7 +126,7 @@ struct NeuralNetwork {
         return prime_sigmoid_vector;
     }
 
-    double backpropagation(const std::vector<double> &utterTrashOutput, const std::vector<double> &targetVector){
+    oneExampleGradients backpropagation(const std::vector<double> &utterTrashOutput, const std::vector<double> &targetVector){
         if(utterTrashOutput.size() != targetVector.size()) std::cerr << "backpropagation: size missmatch" << std::endl;
         
         // ------------- Loss und Cost berechnen --------------------
@@ -136,10 +163,16 @@ struct NeuralNetwork {
             nabla_wC = outerProduct(delta_per_layer[l] , aPerLayer[l-1]);
             nabla_wC_per_layer[l] = nabla_wC;
         }
-
+        /*
         nabla_w = nabla_wC_per_layer;
         nabla_b = delta_per_layer;
-        return cost;
+        */
+        oneExampleGradients returnGradients;
+        returnGradients.oneExampleNabla_w = nabla_wC_per_layer;
+        returnGradients.oneExampleNabla_b = delta_per_layer;
+        returnGradients.oneExampleCost = cost;
+        
+        return returnGradients;
     }
 
     void updateWeightsAndBiases(double learning_rate){
@@ -153,6 +186,39 @@ struct NeuralNetwork {
             biases[l] = subtractVectors(biases[l], tmpVector);
         }
 
+    }
+    // Gemini hat mit indexierung geholfen
+    void train(std::vector<Image> trainingImages, int epochs, double learning_rate, int miniBatchSize){
+        for(int e = 0; e < epochs; ++e){
+            double epochCost = 0.0;
+            for(size_t i = 0; i < trainingImages.size(); i += miniBatchSize){
+                size_t current_batch_size = std::min((size_t)miniBatchSize, trainingImages.size() - i);
+                //nablas nullen
+                resetNablaGradients();
+                double batchCost = 0.0;
+                for(int j = 0; j < current_batch_size; ++j){
+                    std::vector<double> output = feedforward(trainingImages[i+j].pixels);
+                    std::vector<double> targetVector = createTargetVector(trainingImages[i+j].label);
+                    oneExampleGradients oEG = backpropagation(output, targetVector);
+                    // Gradienten werden kummuliert
+                    for(size_t l = 0; l < this->nabla_w.size(); ++l){
+                        this->nabla_w[l] = matrixAddition(nabla_w[l], oEG.oneExampleNabla_w[l]);
+                        this->nabla_b[l] = vectorAddition(nabla_b[l], oEG.oneExampleNabla_b[l]);
+                    }
+                    batchCost += oEG.oneExampleCost;
+                    
+                }
+                // Kummulierte Gradienten werden mit minibatchsize geteilt um den durschnitt zu bekommen
+                double scale_factor = 1.0 / current_batch_size; // weil in den nächsten schritten nicht subtrahiert sondern multipliziert wird. Eigenlich wird duch die minibatchsize subth.
+                for(size_t l = 0; l < this->nabla_w.size(); ++l){ 
+                    this->nabla_w[l] = matrixScalarMultiplication(this->nabla_w[l], scale_factor);
+                    this->nabla_b[l] = vectorScalarMultiplication(this->nabla_b[l], scale_factor);
+                }
+                updateWeightsAndBiases(learning_rate);
+                epochCost += batchCost;
+            }
+            std::cout << "Epoch " << e + 1 << ": Average Cost = " << epochCost/ trainingImages.size() << std::endl;
+        }
     }
 };
 
@@ -189,9 +255,14 @@ std::vector<Image> readData(std::string path){
 
 int main(){
     std::vector<Image> images = readData("data/mnist_train.csv");
+    std::vector<Image> testImages = readData("data/mnist_test.csv");
     /*std::cout << "First Label: " << images[0].label << std::endl;
     std::cout << "Last Label: " << images[images.size()-1].label << std::endl;
     */
+
+    std::vector<int> architecture = {784, 40, 10};
+    NeuralNetwork nn(architecture);
+    nn.train(images, 2, 0.05, 32);
 
 
 

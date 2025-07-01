@@ -172,3 +172,27 @@ std::vector<std::vector<double>> matrixSubtraction(
 
     return result;
 }
+
+std::vector<std::vector<double>> matrixAddition(
+    const std::vector<std::vector<double>>& a,
+    const std::vector<std::vector<double>>& b
+) {
+    if (a.size() != b.size()) {
+        throw std::invalid_argument("Matrizen müssen die gleiche Anzahl an Zeilen haben.");
+    }
+
+    std::vector<std::vector<double>> result(a.size());
+
+    for (size_t i = 0; i < a.size(); ++i) {
+        if (a[i].size() != b[i].size()) {
+            throw std::invalid_argument("Alle Zeilen müssen gleich viele Spalten haben.");
+        }
+
+        result[i].resize(a[i].size());
+        for (size_t j = 0; j < a[i].size(); ++j) {
+            result[i][j] = a[i][j] + b[i][j];
+        }
+    }
+
+    return result;
+}
