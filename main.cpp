@@ -268,10 +268,7 @@ std::vector<Image> readData(std::string path){
 int main(){
     std::vector<Image> images = readData("data/mnist_train.csv");
     std::vector<Image> testImages = readData("data/mnist_test.csv");
-    /*std::cout << "First Label: " << images[0].label << std::endl;
-    std::cout << "Last Label: " << images[images.size()-1].label << std::endl;
-    */
-
+    
     std::vector<int> architecture = {784, 40, 10};
     NeuralNetwork nn(architecture);
     nn.train(images, 20, 0.008, 32);
