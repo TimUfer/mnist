@@ -25,6 +25,27 @@ double averageOfVector(const std::vector<double> &vector){
     return sum/vector.size();
 }
 
+std::vector<std::vector<double>> matrixScalarMultiplication(const std::vector<std::vector<double>>& matrix, double scalar) {
+    std::vector<std::vector<double>> result = matrix;
+
+    for (size_t i = 0; i < result.size(); ++i) {
+        for (size_t j = 0; j < result[i].size(); ++j) {
+            result[i][j] *= scalar;
+        }
+    }
+
+    return result;
+}
+
+std::vector<double> vectorScalarMultiplication(const std::vector<double>& vec, double scalar) {
+    std::vector<double> result(vec.size());
+
+    for (size_t i = 0; i < vec.size(); ++i) {
+        result[i] = vec[i] * scalar;
+    }
+
+    return result;
+}
 
 
 // Google Gemini for time reasons
@@ -125,4 +146,29 @@ std::vector<std::vector<double>> transposeMatrix(const std::vector<std::vector<d
     }
 
     return transposed;
+}
+
+
+std::vector<std::vector<double>> matrixSubtraction(
+    const std::vector<std::vector<double>>& a,
+    const std::vector<std::vector<double>>& b
+) {
+    if (a.size() != b.size()) {
+        throw std::invalid_argument("Die Matrizen müssen die gleiche Anzahl an Zeilen haben.");
+    }
+
+    std::vector<std::vector<double>> result(a.size());
+
+    for (size_t i = 0; i < a.size(); ++i) {
+        if (a[i].size() != b[i].size()) {
+            throw std::invalid_argument("Alle Zeilen müssen gleich lang sein.");
+        }
+
+        result[i].resize(a[i].size());
+        for (size_t j = 0; j < a[i].size(); ++j) {
+            result[i][j] = a[i][j] - b[i][j];
+        }
+    }
+
+    return result;
 }

@@ -1,6 +1,5 @@
 #include <cmath>
 #include <cstddef>
-#include <deque>
 #include <iostream> 
 #include <ostream>
 #include <sstream>
@@ -94,13 +93,13 @@ struct NeuralNetwork {
 
     std::vector<double> createPrimeSigmoidVector(std::vector<double> zVector){
         std::vector<double> prime_sigmoid_vector(zVector.size());
-        for(int i = 0; i < prime_sigmoid_vector.size(); ++i){
+        for(size_t i = 0; i < prime_sigmoid_vector.size(); ++i){
             prime_sigmoid_vector[i] = sigmoid_prime(zVector[i]);
         }
         return prime_sigmoid_vector;
     }
 
-    void backpropagation(const std::vector<double> &utterTrashOutput, const std::vector<double> &targetVector){
+    double backpropagation(const std::vector<double> &utterTrashOutput, const std::vector<double> &targetVector){
         if(utterTrashOutput.size() != targetVector.size()) std::cerr << "backpropagation: size missmatch" << std::endl;
         
         // ------------- Loss und Cost berechnen --------------------
@@ -126,17 +125,33 @@ struct NeuralNetwork {
         nabla_wC_per_layer[index_output] = nabla_wC;
             // ------------------- Hidden-Layers ------------------------
         for(int l = index_output-1; l >= 0; --l){
+            //Berechnung des neuen delta. Dieberechnung von delta in den Hidden-Layers ist anders
             const std::vector<double> &prev_delta = delta_per_layer[l+1];
             std::vector<double> current_delta = hadamardProduct(matrixVectorMultiplication
                 (transposeMatrix(weights[l]), prev_delta), createPrimeSigmoidVector(zVectorPerLayer[l]));
         
             delta_per_layer[l] = current_delta;
+
+            //Berechnung des Gradienten dieses Layers
             nabla_wC = outerProduct(delta_per_layer[l] , aPerLayer[l-1]);
             nabla_wC_per_layer[l] = nabla_wC;
         }
 
         nabla_w = nabla_wC_per_layer;
         nabla_b = delta_per_layer;
+        return cost;
+    }
+
+    void updateWeightsAndBiases(double learning_rate){
+        for(size_t l = 0; l < zVectorPerLayer.size(); ++l){
+            // Weights
+            std::vector<std::vector<double>> tmpMatrix = matrixScalarMultiplication(nabla_w[l], learning_rate);
+            weights[l] = matrixSubtraction(weights[l], tmpMatrix); 
+
+            // Biases
+            std::vector<double> tmpVector = vectorScalarMultiplication(nabla_b[l], learning_rate);
+            biases[l] = subtractVectors(biases[l], tmpVector);
+        }
 
     }
 };
