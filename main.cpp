@@ -73,22 +73,22 @@ struct NeuralNetwork {
         }
     }
 
-    void resetNablaGradients() {
-        // Zurücksetzen von nabla_w
-        for (size_t l = 0; l < nabla_w.size(); ++l) {
-            for (size_t row = 0; row < nabla_w[l].size(); ++row) {
-                for (size_t col = 0; col < nabla_w[l][row].size(); ++col) {
-                    nabla_w[l][row][col] = 0.0;
-                }
+    void resetNablaGradients(){
+        for(size_t l = 0; l < nabla_w.size(); ++l){
+            // Korrekt: Setze alle Elemente der Gradientenmatrix auf 0,
+            // statt die Matrix zu leeren. Die Dimensionen bleiben erhalten.
+            // nabla_w[l] ist ein std::vector<std::vector<double>>
+            for(size_t i = 0; i < nabla_w[l].size(); ++i){ // Iteriere über Zeilen
+                std::fill(nabla_w[l][i].begin(), nabla_w[l][i].end(), 0.0); // Setze alle Spalten der aktuellen Zeile auf 0
             }
-        }
-        // Zurücksetzen von nabla_b
-        for (size_t l = 0; l < nabla_b.size(); ++l) {
-            for (size_t i = 0; i < nabla_b[l].size(); ++i) {
-                nabla_b[l][i] = 0.0;
-            }
+            
+            // Auch für Biases auf 0 setzen
+            // nabla_b[l] ist ein std::vector<double>
+            std::fill(nabla_b[l].begin(), nabla_b[l].end(), 0.0);
         }
     }
+
+
 
     std::vector<double> feedforward(const std::vector<double> &imagePixels){    
         if(imagePixels.size() != architecture[0]) std::cerr << "Quantity of Pixels does not match architecture" << std::endl;
@@ -148,19 +148,20 @@ struct NeuralNetwork {
         std::vector<double> output_delta = hadamardProduct(subtractVectors(utterTrashOutput, targetVector), prime_sigmoid_vector);
         delta_per_layer[index_output] = output_delta;
                 // Berechnung der Gradienten der Ausgabeschicht
-        std::vector<std::vector<double>> nabla_wC = outerProduct(delta_per_layer[index_output] , aPerLayer[index_output-1]);
+        std::vector<std::vector<double>> nabla_wC = outerProduct(delta_per_layer[index_output] , aPerLayer[index_output]);
         nabla_wC_per_layer[index_output] = nabla_wC;
             // ------------------- Hidden-Layers ------------------------
         for(int l = index_output-1; l >= 0; --l){
             //Berechnung des neuen delta. Dieberechnung von delta in den Hidden-Layers ist anders
             const std::vector<double> &prev_delta = delta_per_layer[l+1];
+
             std::vector<double> current_delta = hadamardProduct(matrixVectorMultiplication
-                (transposeMatrix(weights[l]), prev_delta), createPrimeSigmoidVector(zVectorPerLayer[l]));
+                (transposeMatrix(weights[l+1]), prev_delta), createPrimeSigmoidVector(zVectorPerLayer[l]));
         
             delta_per_layer[l] = current_delta;
 
             //Berechnung des Gradienten dieses Layers
-            nabla_wC = outerProduct(delta_per_layer[l] , aPerLayer[l-1]);
+            nabla_wC = outerProduct(delta_per_layer[l] , aPerLayer[l]);
             nabla_wC_per_layer[l] = nabla_wC;
         }
         /*
@@ -180,7 +181,7 @@ struct NeuralNetwork {
             // Weights
             std::vector<std::vector<double>> tmpMatrix = matrixScalarMultiplication(nabla_w[l], learning_rate);
             weights[l] = matrixSubtraction(weights[l], tmpMatrix); 
-
+                
             // Biases
             std::vector<double> tmpVector = vectorScalarMultiplication(nabla_b[l], learning_rate);
             biases[l] = subtractVectors(biases[l], tmpVector);
@@ -196,12 +197,13 @@ struct NeuralNetwork {
                 //nablas nullen
                 resetNablaGradients();
                 double batchCost = 0.0;
-                for(int j = 0; j < current_batch_size; ++j){
+                for(size_t j = 0; j < current_batch_size; ++j){
                     std::vector<double> output = feedforward(trainingImages[i+j].pixels);
                     std::vector<double> targetVector = createTargetVector(trainingImages[i+j].label);
                     oneExampleGradients oEG = backpropagation(output, targetVector);
                     // Gradienten werden kummuliert
                     for(size_t l = 0; l < this->nabla_w.size(); ++l){
+                                
                         this->nabla_w[l] = matrixAddition(nabla_w[l], oEG.oneExampleNabla_w[l]);
                         this->nabla_b[l] = vectorAddition(nabla_b[l], oEG.oneExampleNabla_b[l]);
                     }

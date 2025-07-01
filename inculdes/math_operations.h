@@ -26,4 +26,6 @@ std::vector<std::vector<double>> matrixAddition(
     const std::vector<std::vector<double>>& a,
     const std::vector<std::vector<double>>& b
 );
+
+//void checkMatrixIntegrity(const std::vector<std::vector<double>>& matrix, const std::string& matrixName = "Matrix") ;
 #endif 
