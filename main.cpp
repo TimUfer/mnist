@@ -8,7 +8,7 @@
 #include <fstream>
 
 
-#include "inculdes/math_operations.h"
+#include "includes/math_operations.h"
 
 struct Image {
     int label;
