@@ -75,20 +75,13 @@ struct NeuralNetwork {
 
     void resetNablaGradients(){
         for(size_t l = 0; l < nabla_w.size(); ++l){
-            // Korrekt: Setze alle Elemente der Gradientenmatrix auf 0,
-            // statt die Matrix zu leeren. Die Dimensionen bleiben erhalten.
-            // nabla_w[l] ist ein std::vector<std::vector<double>>
             for(size_t i = 0; i < nabla_w[l].size(); ++i){ // Iteriere über Zeilen
                 std::fill(nabla_w[l][i].begin(), nabla_w[l][i].end(), 0.0); // Setze alle Spalten der aktuellen Zeile auf 0
             }
             
-            // Auch für Biases auf 0 setzen
-            // nabla_b[l] ist ein std::vector<double>
             std::fill(nabla_b[l].begin(), nabla_b[l].end(), 0.0);
         }
     }
-
-
 
     std::vector<double> feedforward(const std::vector<double> &imagePixels){    
         if(imagePixels.size() != architecture[0]) std::cerr << "Quantity of Pixels does not match architecture" << std::endl;
@@ -222,6 +215,23 @@ struct NeuralNetwork {
             std::cout << "Epoch " << e + 1 << ": Average Cost = " << epochCost/ trainingImages.size() << std::endl;
         }
     }
+
+    double evaluate(std::vector<Image> testImages){
+        int count = 0;
+        double sumCost = 0.0;
+        for(const Image &i : testImages){
+            
+            std::vector<double> targetVector = createTargetVector(i.label);
+            std::vector<double> output = feedforward(i.pixels);
+            std::vector<double> loss(output.size());
+            ++count;
+            for(size_t i = 0; i < output.size(); ++i){
+                loss[i] = std::pow(output[i] - targetVector[i],2);
+            }
+            sumCost += averageOfVector(loss);
+        }
+        return sumCost/count;
+    }
 };
 
 std::vector<Image> readData(std::string path){
@@ -264,9 +274,9 @@ int main(){
 
     std::vector<int> architecture = {784, 40, 10};
     NeuralNetwork nn(architecture);
-    nn.train(images, 5, 0.001, 32);
+    nn.train(images, 20, 0.008, 32);
 
-
+    std::cout << "TEST DATA COST: " << nn.evaluate(testImages) << std::endl;
 
     return 0;
 }
