@@ -1,4 +1,6 @@
 #include <cmath>
+#include <cstddef>
+#include <deque>
 #include <iostream> 
 #include <ostream>
 #include <sstream>
@@ -51,6 +53,8 @@ struct NeuralNetwork {
     std::vector<std::vector<std::vector<double>>> weights; // weights[layer][target_neuron][source_neuron] = Gewicht der Verbindung
     std::vector<std::vector<double>> aPerLayer; // wird später bei der backpropagation gebraucht. Spichert alle current_a
     std::vector<std::vector<double>> zVectorPerLayer; // wird später bei der backpropagation gebraucht. Spichert alle zVektoren also jeden wert
+    std::vector<std::vector<std::vector<double>>> nabla_w;
+    std::vector<std::vector<double>> nabla_b;
 
     NeuralNetwork(std::vector<int> architecture){
         this->architecture = architecture;
@@ -88,6 +92,14 @@ struct NeuralNetwork {
         return current_a; // output am ende mit welchem der Loss berechnet wird
     }
 
+    std::vector<double> createPrimeSigmoidVector(std::vector<double> zVector){
+        std::vector<double> prime_sigmoid_vector(zVector.size());
+        for(int i = 0; i < prime_sigmoid_vector.size(); ++i){
+            prime_sigmoid_vector[i] = sigmoid_prime(zVector[i]);
+        }
+        return prime_sigmoid_vector;
+    }
+
     void backpropagation(const std::vector<double> &utterTrashOutput, const std::vector<double> &targetVector){
         if(utterTrashOutput.size() != targetVector.size()) std::cerr << "backpropagation: size missmatch" << std::endl;
         
@@ -100,8 +112,31 @@ struct NeuralNetwork {
         double cost = averageOfVector(loss);
 
         // ------------------ Backpropagation -----------------------
-        double gradient;
+        std::vector<std::vector<std::vector<double>>> nabla_wC_per_layer(zVectorPerLayer.size()); 
+            // ------------------- Output-Layer -------------------------
+        size_t index_output = zVectorPerLayer.size() - 1;
+                // Berechnung delta der Ausgabeschicht
+        std::vector<std::vector<double>> delta_per_layer(zVectorPerLayer.size());
+        std::vector<double> prime_sigmoid_vector = createPrimeSigmoidVector(zVectorPerLayer[index_output]);
         
+        std::vector<double> output_delta = hadamardProduct(subtractVectors(utterTrashOutput, targetVector), prime_sigmoid_vector);
+        delta_per_layer[index_output] = output_delta;
+                // Berechnung der Gradienten der Ausgabeschicht
+        std::vector<std::vector<double>> nabla_wC = outerProduct(delta_per_layer[index_output] , aPerLayer[index_output-1]);
+        nabla_wC_per_layer[index_output] = nabla_wC;
+            // ------------------- Hidden-Layers ------------------------
+        for(int l = index_output-1; l >= 0; --l){
+            const std::vector<double> &prev_delta = delta_per_layer[l+1];
+            std::vector<double> current_delta = hadamardProduct(matrixVectorMultiplication
+                (transposeMatrix(weights[l]), prev_delta), createPrimeSigmoidVector(zVectorPerLayer[l]));
+        
+            delta_per_layer[l] = current_delta;
+            nabla_wC = outerProduct(delta_per_layer[l] , aPerLayer[l-1]);
+            nabla_wC_per_layer[l] = nabla_wC;
+        }
+
+        nabla_w = nabla_wC_per_layer;
+        nabla_b = delta_per_layer;
 
     }
 };

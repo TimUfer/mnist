@@ -71,3 +71,58 @@ std::vector<double> vectorAddition(const std::vector<double>& vec1, const std::v
     return result_vec;
 }
 
+std::vector<std::vector<double>> outerProduct(const std::vector<double>& vec1, const std::vector<double>& vec2) {
+    std::vector<std::vector<double>> result(vec1.size(), std::vector<double>(vec2.size()));
+    for (size_t i = 0; i < vec1.size(); ++i) {
+        for (size_t j = 0; j < vec2.size(); ++j) {
+            result[i][j] = vec1[i] * vec2[j];
+        }
+    }
+    return result;
+}
+
+// ChatGPT
+std::vector<double> subtractVectors(const std::vector<double>& a, const std::vector<double>& b) {
+    if (a.size() != b.size()) {
+        throw std::invalid_argument("Vektoren müssen die gleiche Länge haben.");
+    }
+
+    std::vector<double> result(a.size());
+    for (size_t i = 0; i < a.size(); ++i) {
+        result[i] = a[i] - b[i];
+    }
+    return result;
+}
+
+
+std::vector<double> hadamardProduct(const std::vector<double>& a, const std::vector<double>& b) {
+    if (a.size() != b.size()) {
+        throw std::invalid_argument("Vektoren müssen die gleiche Länge haben.");
+    }
+
+    std::vector<double> result(a.size());
+    for (size_t i = 0; i < a.size(); ++i) {
+        result[i] = a[i] * b[i];
+    }
+    return result;
+}
+
+std::vector<std::vector<double>> transposeMatrix(const std::vector<std::vector<double>>& matrix) {
+    if (matrix.empty()) return {};
+
+    size_t rows = matrix.size();
+    size_t cols = matrix[0].size();
+
+    std::vector<std::vector<double>> transposed(cols, std::vector<double>(rows));
+
+    for (size_t i = 0; i < rows; ++i) {
+        if (matrix[i].size() != cols) {
+            throw std::invalid_argument("Alle Zeilen müssen gleich lang sein.");
+        }
+        for (size_t j = 0; j < cols; ++j) {
+            transposed[j][i] = matrix[i][j];
+        }
+    }
+
+    return transposed;
+}

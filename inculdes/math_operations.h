@@ -12,4 +12,8 @@ std::vector<double> vectorAddition(const std::vector<double>& vec1, const std::v
 std::vector<std::vector<double>> random_matrix(int m, int n);
 std::vector<double> random_vector(int size);
 double averageOfVector(const std::vector<double> &vector);
+std::vector<double> subtractVectors(const std::vector<double>& a, const std::vector<double>& b);
+std::vector<double> hadamardProduct(const std::vector<double>& a, const std::vector<double>& b);
+std::vector<std::vector<double>> transposeMatrix(const std::vector<std::vector<double>>& matrix);
+std::vector<std::vector<double>> outerProduct(const std::vector<double>& vec1, const std::vector<double>& vec2);
 #endif 
