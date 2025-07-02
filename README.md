@@ -6,7 +6,7 @@
     git clone git@github.com:TimUfer/mnist.git
     ```
     
-2. add mnist csv files to data directory 
+2. add mnist csv files to data directory (look at readme.txt)
 3. cd to mnist and compile main.cpp
     
     ```jsx
