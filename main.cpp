@@ -31,7 +31,7 @@ double sigmoid_prime(double z) {
     return s * (1.0 - s);
 }
 
-std::vector<double> createTargetVector(const int &label){
+std::vector<double> createTargetVector(int label){
     if(label > 9) std::cerr << "createTargetVector: label kann nicht grösser 9 sein" << std::endl;
     std::vector<double> targetVector(10);
     for(int i = 0; i < 10; ++i){
@@ -111,7 +111,7 @@ struct NeuralNetwork {
         return current_a; // output am ende mit welchem der Loss berechnet wird
     }
 
-    std::vector<double> createPrimeSigmoidVector(std::vector<double> zVector){
+    std::vector<double> createPrimeSigmoidVector(const std::vector<double> &zVector){
         std::vector<double> prime_sigmoid_vector(zVector.size());
         for(size_t i = 0; i < prime_sigmoid_vector.size(); ++i){
             prime_sigmoid_vector[i] = sigmoid_prime(zVector[i]);
@@ -182,7 +182,7 @@ struct NeuralNetwork {
 
     }
     // Gemini hat mit indexierung geholfen
-    void train(std::vector<Image> trainingImages, int epochs, double learning_rate, int miniBatchSize){
+    void train(const std::vector<Image> &trainingImages, int epochs, double learning_rate, int miniBatchSize){
         for(int e = 0; e < epochs; ++e){
             double epochCost = 0.0;
             for(size_t i = 0; i < trainingImages.size(); i += miniBatchSize){
@@ -216,7 +216,7 @@ struct NeuralNetwork {
         }
     }
 
-    double evaluate(std::vector<Image> testImages){
+    double evaluate(const std::vector<Image> &testImages){
         int count = 0;
         double sumCost = 0.0;
         for(const Image &i : testImages){
@@ -234,7 +234,7 @@ struct NeuralNetwork {
     }
 };
 
-std::vector<Image> readData(std::string path){
+std::vector<Image> readData(const std::string &path){
     std::ifstream input(path);
         if (!input.is_open()) {
         std::cerr << "Fehler: Datei " << path << " konnte nicht geöffnet werden. Bitte Pfad überprüfen!" << std::endl;
